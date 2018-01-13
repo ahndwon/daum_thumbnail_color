@@ -81,36 +81,67 @@ def remove_blanks(a_list):
 # 감성 어휘 단색 데이터 - http://colorbank.ewha.ac.kr/colorbank/sub03_03_01.php
 def sensitive_voca(thumbnail):
     temp_list = []
-    f = open('voca_rgb.csv', 'r')
+    f = open('voca_rgb3.csv', 'r')
     while True:
         v = f.readline()
         if v == "":
             break
         v = v.replace("(", "")
         v = v.replace(")", "")
+        v = v.replace(" ", "")
         v = v.replace("\"", "")
         s = v.split(',')
+
+        for i in range(2, len(s)):
+            s[i] = s[i].replace("\\", "")
+            s[i] = s[i].replace("n", "")
+            s[i] = s[i].replace("R", "")
+            s[i] = s[i].replace("G", ",")
+            s[i] = s[i].replace("B", ",")
+            # print("s[" , i , "]" , s[i])
+
         if s[0] == "":
             break
         s = remove_blanks(s)
         temp_list.append(s)
 
+    print("temp_list:", temp_list)
     voca_name_list = []
     voca_color_list = []
+    voca_kor_name_list = []
+
     for i in range(0, len(temp_list)):
         test_colors = []
         test_name = temp_list[i][0]
+        test_kor_name = temp_list[i][1]
         test_voca = []
+        test_voca_kor = []
 
+        # RGB값 읽기
+        # for j in range(0, int(len(temp_list[i][2:-1]) / 3) + 1):
+        #     count = 2 + 3 * j
+        #     if int(len(temp_list[i][2:-1]) / 3) == 0:
+        #         break
+        #     r = temp_list[i][count]
+        #     g = temp_list[i][count + 1]
+        #     b = temp_list[i][count + 2]
+        #
+        #     rgb = sRGBColor(r, g, b)
+        #     test_colors.append(rgb)
+        for j in range(2, len(temp_list[i])):
+            v = temp_list[i][j].split(",")
 
-        for j in range(0, int(len(temp_list[i][2:-1]) / 3) + 1):
             count = 2 + 3 * j
             if int(len(temp_list[i][2:-1]) / 3) == 0:
                 break
-            r = temp_list[i][count]
-            g = temp_list[i][count + 1]
-            b = temp_list[i][count + 2]
-
+            r = v[0]
+            g = v[1]
+            b = v[2]
+            b = b.replace("\\", "")
+            b = b.replace("n", "")
+            # print("r: ", r)
+            # print("g: ", g)
+            # print("b: ", b)
             rgb = sRGBColor(r, g, b)
             test_colors.append(rgb)
 
@@ -119,68 +150,29 @@ def sensitive_voca(thumbnail):
 
         voca_name_list.append(test_name)
         voca_color_list.append(test_colors)
+        voca_kor_name_list.append(test_kor_name)
 
-    voca_hash = {voca_name_list[0] : voca_color_list[0], voca_name_list[1] : voca_color_list[1],
-                 voca_name_list[2] : voca_color_list[2], voca_name_list[3] : voca_color_list[3],
-                 voca_name_list[4]: voca_color_list[4], voca_name_list[5] : voca_color_list[5],
-                 voca_name_list[6]: voca_color_list[6], voca_name_list[7] : voca_color_list[7],
+    voca_kor_name_hash = {voca_name_list[0]: voca_kor_name_list[0], voca_name_list[1]: voca_kor_name_list[1],
+                          voca_name_list[2]: voca_kor_name_list[2], voca_name_list[3]: voca_kor_name_list[3],
+                          voca_name_list[4]: voca_kor_name_list[4], voca_name_list[5]: voca_kor_name_list[5],
+                          voca_name_list[6]: voca_kor_name_list[6], voca_name_list[7]: voca_kor_name_list[7],
+                          voca_name_list[8]: voca_kor_name_list[0], voca_name_list[9]: voca_kor_name_list[9],
+                          voca_name_list[10]: voca_kor_name_list[10]
+                          }
+
+    voca_hash = {voca_name_list[0]: voca_color_list[0], voca_name_list[1]: voca_color_list[1],
+                 voca_name_list[2]: voca_color_list[2], voca_name_list[3]: voca_color_list[3],
+                 voca_name_list[4]: voca_color_list[4], voca_name_list[5]: voca_color_list[5],
+                 voca_name_list[6]: voca_color_list[6], voca_name_list[7]: voca_color_list[7],
                  voca_name_list[8]: voca_color_list[0], voca_name_list[9]: voca_color_list[9],
-                 voca_name_list[10]: voca_color_list[10], voca_name_list[11]: voca_color_list[11],
-                 voca_name_list[12]: voca_color_list[12], voca_name_list[13]: voca_color_list[13],
-                 voca_name_list[14]: voca_color_list[14], voca_name_list[15]: voca_color_list[15],
-                 voca_name_list[16]: voca_color_list[16], voca_name_list[17]: voca_color_list[17],
-                 voca_name_list[18]: voca_color_list[18], voca_name_list[19]: voca_color_list[19],
-                 voca_name_list[20]: voca_color_list[20], voca_name_list[21]: voca_color_list[21],
-                 voca_name_list[22]: voca_color_list[22], voca_name_list[23]: voca_color_list[23],
-                 voca_name_list[24]: voca_color_list[24], voca_name_list[25]: voca_color_list[25],
-                 voca_name_list[26]: voca_color_list[26], voca_name_list[27]: voca_color_list[27]}
+                 voca_name_list[10]: voca_color_list[10]
+                 }
+    print("voca_hash: ", voca_hash)
+    print("voca_kor_name_hash: ", voca_kor_name_hash)
     f.close()
-
-    # strong = [sRGBColor(0, 119, 174), sRGBColor(0, 116, 121), sRGBColor(0, 76, 78), sRGBColor(0, 21, 29),
-    #           sRGBColor(0, 95, 47), sRGBColor(140, 198, 71), sRGBColor(163, 207, 98), sRGBColor(179, 211, 53),
-    #           sRGBColor(20, 27, 19)]
-    # unique = [sRGBColor(0, 114, 171), sRGBColor(103, 193, 193), sRGBColor(0, 177, 177), sRGBColor(0, 169, 166),
-    #           sRGBColor(133, 200, 190), sRGBColor(0, 147, 111), sRGBColor(226, 240, 227), sRGBColor(43, 173, 111),
-    #           sRGBColor(173, 211, 154)]
-    # casual = [sRGBColor(166, 222, 243), sRGBColor(127, 211, 241), sRGBColor(95, 188, 219), sRGBColor(0, 170, 221),
-    #           sRGBColor(0, 119, 174), sRGBColor(0, 188, 198), sRGBColor(0, 116, 121), sRGBColor(135, 209, 211),
-    #           sRGBColor(91, 196, 192)]
-    # cheerful = [sRGBColor(0, 164, 217), sRGBColor(1, 136, 192), sRGBColor(0, 114, 171), sRGBColor(0, 92, 139),
-    #             sRGBColor(0, 110, 119), sRGBColor(0, 147, 111), sRGBColor(1, 159, 98), sRGBColor(0, 161, 94),
-    #             sRGBColor(0, 140, 67)]
-    # dynamic = [sRGBColor(0, 77, 157), sRGBColor(0, 130, 182), sRGBColor(0, 92, 139), sRGBColor(0, 82, 119),
-    #            sRGBColor(0, 69, 74), sRGBColor(1, 96, 90), sRGBColor(0, 76, 72), sRGBColor(0, 53, 43),
-    #            sRGBColor(0, 102, 75)]
-    # sensual = [sRGBColor(201, 233, 234), sRGBColor(173, 222, 219), sRGBColor(228, 242, 231), sRGBColor(164, 217, 207),
-    #            sRGBColor(216, 237, 221), sRGBColor(227, 234, 224), sRGBColor(160, 211, 156), sRGBColor(184, 221, 176),
-    #            sRGBColor(235, 243, 216)]
-    #
-    # sensitive_color = {'strong': strong, 'unique': unique, 'casual': casual, 'cheerful': cheerful,
-    #                    'dynamic': dynamic, 'sensual': sensual}
-    #
-    # sensitive_voca = ["strong", "unique", "casual", "cheerful", "dynamic", "sensual"]
 
     result_voca = ""
     result = (-1)
-
-    # for i in range(0, len(sensitive_color.keys())):
-    #     voca = list(sensitive_color.keys())[i]
-    #     for k in range(0, len(sensitive_color.get(voca))):
-    #         lab_thumbnail_color = convert_color(thumbnail, LabColor)
-    #         lab_sen_color = convert_color(sensitive_color.get(voca)[k], LabColor)
-    #         if result == (-1):
-    #             result = colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1)
-    #             print("result: ", result)
-    #             result_voca = voca
-    #
-    #         else:
-    #             if result < colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1):
-    #                 result = colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1)
-    #                 result_voca = voca
-    #
-    # print("result_voca: ", result_voca)
-    # print("final_result: ", result)
-    # return result_voca
 
     for i in range(0, len(voca_hash.keys())):
         voca = list(voca_hash.keys())[i]
@@ -190,12 +182,14 @@ def sensitive_voca(thumbnail):
             if result == (-1):
                 result = colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1)
                 print("result: ", result)
-                result_voca = voca
+                # result_voca = voca
+                result_voca = voca_kor_name_hash.get(voca)
 
             else:
                 if result < colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1):
                     result = colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1)
-                    result_voca = voca
+                    # result_voca = voca
+                    result_voca = voca_kor_name_hash.get(voca)
 
     print("result_voca: ", result_voca)
     print("final_result: ", result)
@@ -255,8 +249,10 @@ def get_webtoon_info(webtoon_name):
 
         fout.write('"' + data_list_webtoon['data']['webtoon']['cartoon']['artists'][0]['name'] + '",')
 
-        # fout.write(str(dominant_color[i]) + '\n')
-        fout.write(temp + '\n')
+        fout.write('"' + str(dominant_color[i]) + '",')
+        fout.write('"' + ks_color(color) + '",')
+        fout.write(sensitive_voca(color) + '\n')
+        # fout.write(temp + '\n')
     fout.close()
 
 
