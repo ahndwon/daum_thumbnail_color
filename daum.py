@@ -2,18 +2,63 @@
 from urllib.request import urlretrieve
 import csv
 import colormath
+import matplotlib
+import numpy as np
 import requests
 import json
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib import font_manager, rc
+
 from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
 from colorthief import ColorThief
+
 import urllib
 import os
 import re
 
 
-# 썸네일 대표 색
+
+# csv 파일 읽어서 그래프 시각화
+def read_csv():
+    # 한글 폰트 깨짐 해결
+
+    print(matplotlib.rcParams["font.family"])
+    font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+    rc('font', family=font_name)
+
+    result_csv = pd.read_csv("test.csv")
+    voca_unique = pd.unique(result_csv["감성어휘"])
+    print(voca_unique)
+
+    # zero행렬 이용
+    zero = np.zeros((len(result_csv), len(voca_unique)))
+
+    # zero행렬을 DataFrame으로 변환
+    dummy = pd.DataFrame(zero, columns=voca_unique)
+
+    # 더미행렬 -> 희소행렬
+    for n in enumerate(result_csv["감성어휘"]):
+        dummy.ix[n] = 1
+
+    # Term Document Matrix형식으로 변경
+    TDM = dummy.T
+    print(TDM)
+    word_counter = TDM.sum(axis=1)  # 행 단위 합계
+    print("word_counter: ", word_counter)
+
+    # 빈도수 시각화하기
+    # word_counter.plot(kind='barh', title='voca counter')
+
+    # 내림차순 정렬
+    word_counter.sort_values().plot(kind='barh', title='voca counter')
+    plt.show()
+    plt.savefig('test.png')
+
+
+    # 썸네일 대표 색
 def dominant_color_from_url(url, tmp_file='tmp.jpg'):
     '''Downloads ths image file and analyzes the dominant color'''
     urlretrieve(url, tmp_file)
@@ -222,28 +267,27 @@ def get_webtoon_info(webtoon_name):
     thumbnail = []
     dominant_color = []
     fout = open(webtoon_name + '.csv', 'a', encoding="utf-8")
+    episode_voca_list = []
     for i in range(0, len(total_episode)):
+
         thumbnail.append(total_episode[i]['thumbnailImage']['url'])
-        print(total_episode[i]['title'])
-        print(total_episode[i]['thumbnailImage']['url'])
+        # print(total_episode[i]['title'])
+        # print(total_episode[i]['thumbnailImage']['url'])
         dominant_color.append(dominant_color_from_url(thumbnail[i]))
-        print(dominant_color[i])
+        # print(dominant_color[i])
 
         temp = str(dominant_color[i])
         temp = re.sub('[()]', '', temp)
 
         x = temp
         x.replace(" ", "")
-        print(temp)
-        print(x.replace(" ", ""))
         a, b, c = x.split(",")
-        print(a)
-        print(b)
-        print(c)
+
         color = sRGBColor(a, b, c)
-        print(color)
-        print("sensitive_voca(color):", sensitive_voca(color))
-        print("ks_color() :", ks_color(color))
+        # print("sensitive_voca(color):", sensitive_voca(color))
+        # print("ks_color() :", ks_color(color))
+
+        episode_voca_list.append(sensitive_voca(color))
 
         fout.write(total_episode[i]['title'] + ',')
 
@@ -253,11 +297,52 @@ def get_webtoon_info(webtoon_name):
         fout.write('"' + ks_color(color) + '",')
         fout.write(sensitive_voca(color) + '\n')
         # fout.write(temp + '\n')
+    show_plot(episode_voca_list, webtoon_name)
     fout.close()
+
+# 크롤링한 데이터 기반으로 그래프 시각화
+def show_plot(voca_list, webtoon_name):
+    # 한글 폰트 깨짐 해결
+    print(matplotlib.rcParams["font.family"])
+    font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+    rc('font', family=font_name)
+
+    voca_unique = pd.unique(voca_list)
+    print(voca_unique)
+
+    # zero행렬 이용
+    zero = np.zeros((len(voca_list), len(voca_unique)))
+
+    # zero행렬을 DataFrame으로 변환
+    dummy = pd.DataFrame(zero, columns=voca_unique)
+
+    # 더미행렬 -> 희소행렬
+    for n in enumerate(voca_list):
+        dummy.ix[n] = 1
+
+    # Term Document Matrix형식으로 변경
+    TDM = dummy.T
+    print(TDM)
+    word_counter = TDM.sum(axis=1)  # 행 단위 합계
+    print("word_counter: ", word_counter)
+
+    # 빈도수 시각화하기
+    # word_counter.plot(kind='barh', title='voca counter')
+
+    # 내림차순 정렬
+    word_counter.sort_values().plot(kind='barh', title='voca counter')
+
+    # show()하기 전에 저장해야됨
+    plt.savefig(webtoon_name + '.png')
+    plt.show()
+
 
 
 if __name__ == '__main__':
+    #read_csv()
     webtoon_name = 'TimeofFuture'
+    webtoon_name = 'hateLove'
+
     fout = open(webtoon_name + '.csv', 'w', encoding="utf-8")
     fout.write('episodeNum,writer,R,G,B,\n')
     get_webtoon_info(webtoon_name)
