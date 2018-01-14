@@ -20,13 +20,16 @@ import os
 import re
 
 
-
 # csv 파일 읽어서 그래프 시각화
 def read_csv():
     # 한글 폰트 깨짐 해결
 
     print(matplotlib.rcParams["font.family"])
-    font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+    # 윈도우용 폰트 지정
+    # font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+
+    # 맥용 폰트 지정
+    font_name = "AppleGothic"
     rc('font', family=font_name)
 
     result_csv = pd.read_csv("test.csv")
@@ -58,7 +61,7 @@ def read_csv():
     plt.savefig('test.png')
 
 
-    # 썸네일 대표 색
+# 썸네일 대표 색 추출하여 반환
 def dominant_color_from_url(url, tmp_file='tmp.jpg'):
     '''Downloads ths image file and analyzes the dominant color'''
     urlretrieve(url, tmp_file)
@@ -68,7 +71,7 @@ def dominant_color_from_url(url, tmp_file='tmp.jpg'):
     return dominant_color
 
 
-# 썸네일 색을 가장 비슷한 KS색으로 바꿔줌
+# 썸네일 색을 가장 비슷한 KS색으로 반환
 def ks_color(webtoon_color):
     red = sRGBColor(255, 0, 0)
     orange = sRGBColor(255, 127, 0)
@@ -126,7 +129,8 @@ def remove_blanks(a_list):
 # 감성 어휘 단색 데이터 - http://colorbank.ewha.ac.kr/colorbank/sub03_03_01.php
 def sensitive_voca(thumbnail):
     temp_list = []
-    f = open('voca_rgb3.csv', 'r')
+    # 윈도우 인코딩
+    f = open('voca_rgb3.csv', 'r', encoding='cp949', errors='ignore')
     while True:
         v = f.readline()
         if v == "":
@@ -231,7 +235,7 @@ def sensitive_voca(thumbnail):
                 result_voca = voca_kor_name_hash.get(voca)
 
             else:
-                if result < colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1):
+                if result > colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1):
                     result = colormath.color_diff.delta_e_cie2000(lab_thumbnail_color, lab_sen_color, 1, 1, 1)
                     # result_voca = voca
                     result_voca = voca_kor_name_hash.get(voca)
@@ -246,7 +250,7 @@ def get_webtoon_info(webtoon_name):
 
     json_string_webtoon = requests.get(json_url_webtoon + webtoon_name).text
     data_list_webtoon = json.loads(json_string_webtoon)
-
+    print("webtoon_url: ", json_url_webtoon+webtoon_name)
     print(data_list_webtoon['data']['webtoon']['title'])  # 웹툰 제목
     print(data_list_webtoon['data']['webtoon']['cartoon']['artists'][0]['name'])  # 웹툰 작가 이름
     print(data_list_webtoon['data']['webtoon']['introduction'])  # 웹툰 소개
@@ -269,7 +273,6 @@ def get_webtoon_info(webtoon_name):
     fout = open(webtoon_name + '.csv', 'a', encoding="utf-8")
     episode_voca_list = []
     for i in range(0, len(total_episode)):
-
         thumbnail.append(total_episode[i]['thumbnailImage']['url'])
         # print(total_episode[i]['title'])
         # print(total_episode[i]['thumbnailImage']['url'])
@@ -297,14 +300,22 @@ def get_webtoon_info(webtoon_name):
         fout.write('"' + ks_color(color) + '",')
         fout.write(sensitive_voca(color) + '\n')
         # fout.write(temp + '\n')
+
+    print("webtoon url: http://webtoon.daum.net/webtoon/view/" + webtoon_name)
     show_plot(episode_voca_list, webtoon_name)
     fout.close()
+
+
 
 # 크롤링한 데이터 기반으로 그래프 시각화
 def show_plot(voca_list, webtoon_name):
     # 한글 폰트 깨짐 해결
     print(matplotlib.rcParams["font.family"])
-    font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+
+    # 윈도우용 폰트 지정
+    # font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+    # 맥용 폰트 지정
+    font_name = "AppleGothic"
     rc('font', family=font_name)
 
     voca_unique = pd.unique(voca_list)
@@ -337,11 +348,20 @@ def show_plot(voca_list, webtoon_name):
     plt.show()
 
 
-
 if __name__ == '__main__':
-    #read_csv()
-    webtoon_name = 'TimeofFuture'
-    webtoon_name = 'hateLove'
+    # read_csv()
+    
+    # 크롤링하고자 하는 웹툰 선택
+    #webtoon_name = 'TimeofFuture'
+    # webtoon_name = 'hateLove'
+    # webtoon_name = 'Garang'
+    #webtoon_name = 'trace2'
+    # webtoon_name = 'famousman'
+    #webtoon_name = 'timing'
+    # webtoon_name = 'heavencouple'
+    # webtoon_name = 'blackbehemoth'
+    # webtoon_name = 'MyHome'
+    webtoon_name = 'cubee'
 
     fout = open(webtoon_name + '.csv', 'w', encoding="utf-8")
     fout.write('episodeNum,writer,R,G,B,\n')
